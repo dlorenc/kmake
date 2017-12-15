@@ -1,0 +1,22 @@
+apiVersion: apps/v1beta2 
+kind: Deployment
+metadata:
+  name: hello-node
+  labels:
+    app: hello-node
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-node
+  template:
+    metadata:
+      labels:
+        app: hello-node
+    spec:
+      containers:
+      - name: nginx
+        image: hello-node:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
