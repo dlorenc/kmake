@@ -14,7 +14,22 @@ import (
 var (
 	imageName      string
 	dockerfilePath string
+	projectId      string
+	remote         bool
 )
+
+type WatchSrv struct {
+	watch  func(string, string) error
+	build  func(string, string, string) (string, error)
+	update func(string) error
+}
+
+//TODO(@r2d4): make these interfaces and configurable
+var defaultWatcher = WatchSrv{
+	watch:  watch.Watch,
+	build:  builder.LocalBuild,
+	update: updater.KsonnetUpdater,
+}
 
 func NewCmdWatch(out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
@@ -28,21 +43,27 @@ func NewCmdWatch(out io.Writer) *cobra.Command {
 	}
 	cmd.Flags().StringVar(&imageName, "image-name", "", "the name of the image to build")
 	cmd.Flags().StringVar(&dockerfilePath, "dockerfile", "Dockerfile", "the relative path to the dockerfile")
+	cmd.Flags().BoolVar(&remote, "remote", false, "local or remote builds")
+	cmd.Flags().StringVar(&projectId, "project-id", "", "project id to use for cloud builds")
 	return cmd
 }
 
 func RunWatch(out io.Writer, cmd *cobra.Command) error {
+	if remote {
+		defaultWatcher.build = builder.RemoteBuild
+	}
+
 	for {
-		if err := watch.Watch(imageName, dockerfilePath); err != nil {
+		if err := defaultWatcher.watch(imageName, dockerfilePath); err != nil {
 			return errors.Wrap(err, "watch")
 		}
 
-		digest, err := builder.Build(imageName, dockerfilePath)
+		digest, err := defaultWatcher.build(imageName, dockerfilePath, projectId)
 		if err != nil {
 			return errors.Wrap(err, "build")
 		}
 
-		if err := updater.Update(digest); err != nil {
+		if err := defaultWatcher.update(digest); err != nil {
 			return errors.Wrap(err, "update")
 		}
 	}
