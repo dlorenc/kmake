@@ -2,10 +2,62 @@
 
 
 [[projects]]
+  name = "github.com/Microsoft/go-winio"
+  packages = ["."]
+  revision = "78439966b38d69bf38227fbf57ac8a6fee70f69a"
+  version = "v0.4.5"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/containerd/continuity"
+  packages = ["pathdriver"]
+  revision = "0cf103d319cc2d7efe085224094f466d1f8b9640"
+
+[[projects]]
+  name = "github.com/docker/docker"
+  packages = ["builder/dockerfile/command","pkg/mount","pkg/system"]
+  revision = "1cea9d3bdb427bbdd7f14c6b11a3f6cef332bd34"
+
+[[projects]]
+  name = "github.com/docker/go-units"
+  packages = ["."]
+  revision = "0dadbb0345b35ec7ef35e228dabb8de89a65bf52"
+  version = "v0.3.2"
+
+[[projects]]
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
   version = "v1.0"
+
+[[projects]]
+  name = "github.com/moby/moby"
+  packages = ["builder/dockerfile/parser"]
+  revision = "1cea9d3bdb427bbdd7f14c6b11a3f6cef332bd34"
+
+[[projects]]
+  name = "github.com/opencontainers/go-digest"
+  packages = ["."]
+  revision = "279bed98673dd5bef374d3b6e4b09e2af76183bf"
+  version = "v1.0.0-rc1"
+
+[[projects]]
+  name = "github.com/opencontainers/image-spec"
+  packages = ["specs-go","specs-go/v1"]
+  revision = "d60099175f88c47cd379c4738d158884749ed235"
+  version = "v1.0.1"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
+  version = "v1.0.4"
 
 [[projects]]
   name = "github.com/spf13/cobra"
@@ -19,9 +71,21 @@
   revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
   version = "v1.0.0"
 
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix","windows"]
+  revision = "1d2aa6dbdea45adaaebb9905d0666e4537563829"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "07464de8b16f5ca646bc999fee5c3d7fd39928d9036889da483bc8e490a0b9a9"
+  inputs-digest = "d5d074a87be93c0c443ea33e4c68c89f1b6e668d7a7dc6ebf494c861598b819b"
   solver-name = "gps-cdcl"
   solver-version = 1
