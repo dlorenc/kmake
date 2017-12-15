@@ -7,16 +7,17 @@ import (
 )
 
 func Update(checksum string) error {
-	setCmd := exec.Command("ks", "param", "set", "hello-node", "image", "hello-node:"+checksum)
-	setCmd.Dir = "./hello-node"
-	if err := setCmd.Run(); err != nil {
-		return errors.Wrapf(err, "setting hello-node image tag %s", "hello-node:"+checksum)
+	envSetCmd := exec.Command("ks", "env", "set", "default")
+	envSetCmd.Dir = "./hello-node"
+	if err := envSetCmd.Run(); err != nil {
+		return errors.Wrap(err, "setting default env")
 	}
 
-	applyCmd := exec.Command("ks", "apply", "default")
+	applyCmd := exec.Command("ks", "apply", "default", "--ext-str", "image=hello-node:"+checksum)
 	applyCmd.Dir = "./hello-node"
-	if err := applyCmd.Run(); err != nil {
-		return errors.Wrap(err, "applying new deployment")
+	out, err := applyCmd.Output()
+	if err != nil {
+		return errors.Wrapf(err, "applying new deployment: %s", out)
 	}
 	return nil
 }

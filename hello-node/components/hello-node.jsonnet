@@ -6,6 +6,8 @@ local containerPort = container.portsType;
 local service = k.core.v1.service;
 local servicePort = k.core.v1.service.mixin.spec.portsType;
 
+local image = std.extVar("image");
+
 local targetPort = params.containerPort;
 local nodePort = params.nodePort;
 local imagePullPolicy = params.imagePullPolicy;
@@ -25,10 +27,10 @@ local appDeployment = deployment
     params.name,
     params.replicas,
     container
-      .new(params.name, params.image)
+      .new(params.name, image)
       .withPorts(containerPort.new(targetPort))
       .withImagePullPolicy(imagePullPolicy),
     labels)
-    .withTerminationGracePeriodSeconds(1);
+    .withTerminationGracePeriodSeconds(0);
 
 k.core.v1.list.new([appService, appDeployment])
