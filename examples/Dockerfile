@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
-
-ADD test_file /test_file
-CMD ["echo", "/test_file"]
+FROM node:6.9.2
+EXPOSE 8080
+COPY server.js .
+CMD node server.js
