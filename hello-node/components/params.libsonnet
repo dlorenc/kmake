@@ -8,9 +8,10 @@
     // Each object below should correspond to a component in the components/ directory
     "hello-node": {
       containerPort: 8080,
-      image: "hello-node:ea1e422cf8e5e1652db6afbca542c5bec1e1fc8ed5c75825300fbe5b1a7533ba",
+      image: "hello-node:5faab845af0c95c64e99183b2173ad888973bcfc05ecbfaf1cef0a13f568eed7",
       imagePullPolicy: "Never",
       name: "hello-node",
+      nodePort: 30005,
       replicas: 1,
       servicePort: 80,
       type: "NodePort",
