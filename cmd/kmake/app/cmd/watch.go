@@ -3,11 +3,11 @@ package cmd
 import (
 	"io"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
 	"github.com/r2d4/kmake/pkg/kmake/builder"
 	"github.com/r2d4/kmake/pkg/kmake/updater"
 	"github.com/r2d4/kmake/pkg/kmake/watch"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
