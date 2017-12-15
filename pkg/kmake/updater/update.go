@@ -6,20 +6,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-func Update(imageName string) error {
-	deployments, err := FindDeploymentsWithImage(imageName)
-	if err != nil {
-		return err
+func Update(checksum string) error {
+	setCmd := exec.Command("ks", "param", "set", "hello-node", "image", "hello-node:"+checksum)
+	setCmd.Dir = "./hello-node"
+	if err := setCmd.Run(); err != nil {
+		return errors.Wrapf(err, "setting hello-node image tag %s", "hello-node:"+checksum)
 	}
-	for _, d := range deployments {
-		out, err := exec.Command("kubectl", "apply", d).Output()
-		if err != nil {
-			return errors.Wrapf(err, "running docker build: %s %s", out, err)
-		}
+
+	applyCmd := exec.Command("ks", "apply", "default")
+	applyCmd.Dir = "./hello-node"
+	if err := applyCmd.Run(); err != nil {
+		return errors.Wrap(err, "applying new deployment")
 	}
 	return nil
-}
-
-func FindDeploymentsWithImage(imageName string) ([]string, error) {
-	return nil, nil
 }

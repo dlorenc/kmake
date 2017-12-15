@@ -1,19 +1,30 @@
 package builder
 
 import (
+	"fmt"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
 )
 
-func Build(imageName, dockerfile string) error {
+func Build(imageName, dockerfile string) (string, error) {
 	logrus.Infof("Building docker image %s from %s", imageName, dockerfile)
-	out, err := exec.Command("docker", "build", "--file", dockerfile, filepath.Dir(dockerfile), "--tag", imageName).CombinedOutput()
+	digest, err := exec.Command("docker", "build", "-q", "--tag", imageName, "--file", dockerfile, filepath.Dir(dockerfile)).Output()
 	if err != nil {
-		return errors.Wrapf(err, "running docker build: %s %s", out, err)
+		return "", errors.Wrapf(err, "running docker build: %s %s", digest, err)
 	}
-	logrus.Infof("Docker build of %s complete", imageName)
-	return nil
+	digestStr := strings.TrimSpace(string(digest))
+	d := strings.Split(digestStr, ":")
+	checksum := d[1]
+
+	logrus.Infof("Docker build of %s complete: %s", imageName, checksum)
+	out, err := exec.Command("docker", "tag", imageName, fmt.Sprintf("%s:%s", imageName, checksum)).CombinedOutput()
+	if err != nil {
+		return "", errors.Wrapf(err, "tagging image: %s", out)
+	}
+
+	return checksum, nil
 }

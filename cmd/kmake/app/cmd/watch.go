@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/pkg/errors"
 	"github.com/r2d4/kmake/pkg/kmake/builder"
 	"github.com/r2d4/kmake/pkg/kmake/updater"
 	"github.com/r2d4/kmake/pkg/kmake/watch"
@@ -31,16 +32,20 @@ func NewCmdWatch(out io.Writer) *cobra.Command {
 }
 
 func RunWatch(out io.Writer, cmd *cobra.Command) error {
-	if err := watch.Watch(imageName, dockerfilePath); err != nil {
-		return err
+	for {
+		if err := watch.Watch(imageName, dockerfilePath); err != nil {
+			return errors.Wrap(err, "watch")
+		}
+
+		digest, err := builder.Build(imageName, dockerfilePath)
+		if err != nil {
+			return errors.Wrap(err, "build")
+		}
+
+		if err := updater.Update(digest); err != nil {
+			return errors.Wrap(err, "update")
+		}
 	}
 
-	if err := builder.Build(imageName, dockerfilePath); err != nil {
-		return err
-	}
-
-	if err := updater.Update(imageName); err != nil {
-		return err
-	}
 	return nil
 }
