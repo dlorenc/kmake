@@ -3,7 +3,7 @@
 build
 
 ```
-	go build -o out/kmake ./cmd/kmake
+go build -o out/kmake ./cmd/kmake
 ```
 
 
