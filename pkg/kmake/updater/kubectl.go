@@ -22,10 +22,12 @@ func KubectlUpdater(tag string, manifests []string, artifacts []config.Artifact)
 		for _, a := range artifacts {
 			replaceableName := fmt.Sprintf("%s:replaceme", a.ImageName)
 			fqImageName := fmt.Sprintf("%s:%s", a.ImageName, tag)
-			manifest = strings.Replace(manifest, replaceableName, fqImageName, 0)
+			// logrus.Infof("Replacing %s with %s", replaceableName, fqImageName)
+			manifest = strings.Replace(manifest, replaceableName, fqImageName, -1)
 		}
 
 		cmd := exec.Command("kubectl", "apply", "-f", "-")
+		// logrus.Infof("Manifest: %s", manifest)
 		r := strings.NewReader(manifest)
 		stdout, stderr, err := util.RunCommand(cmd, r)
 		logrus.Infof("Applying manifest: %s, %s, %s", mp, stdout, stderr)
