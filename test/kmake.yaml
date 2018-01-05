@@ -1,0 +1,8 @@
+artifacts:
+- imageName: gcr.io/dlorenc-vmtest2/frontend
+  dockerfilePath: ./Dockerfile
+  dockerContextPath: ./
+
+manifests:
+- ./pod.yaml
+- ./deployment.yaml

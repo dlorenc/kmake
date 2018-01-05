@@ -23,7 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func RemoteBuild(imageName, dockerfile, projectId string) (string, error) {
+func RemoteBuild(imageName, dockerfile, projectId string, t Tagger) (string, error) {
 	tag := fmt.Sprintf("gcr.io/%s/%s", projectId, imageName)
 
 	//TODO(@r2d4): make context configurable

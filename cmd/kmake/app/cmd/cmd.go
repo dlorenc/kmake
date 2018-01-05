@@ -14,5 +14,6 @@ func NewKMakeCommand(_ io.Reader, out, err io.Writer) *cobra.Command {
 
 	c.AddCommand(NewCmdVersion(out))
 	c.AddCommand(NewCmdWatch(out))
+	c.AddCommand(NewCmdBuild(out))
 	return c
 }

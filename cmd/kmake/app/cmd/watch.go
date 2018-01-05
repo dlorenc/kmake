@@ -20,7 +20,7 @@ var (
 
 type WatchSrv struct {
 	watch  func(string, string) error
-	build  func(string, string, string) (string, error)
+	build  func(string, string, string, builder.Tagger) (string, error)
 	update func(string) error
 }
 
@@ -53,12 +53,14 @@ func RunWatch(out io.Writer, cmd *cobra.Command) error {
 		defaultWatcher.build = builder.RemoteBuild
 	}
 
+	tagger := &builder.CommitTagger{}
+
 	for {
 		if err := defaultWatcher.watch(imageName, dockerfilePath); err != nil {
 			return errors.Wrap(err, "watch")
 		}
 
-		digest, err := defaultWatcher.build(imageName, dockerfilePath, projectId)
+		digest, err := defaultWatcher.build(imageName, dockerfilePath, projectId, tagger)
 		if err != nil {
 			return errors.Wrap(err, "build")
 		}

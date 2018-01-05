@@ -4,28 +4,33 @@ import (
 	"fmt"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/r2d4/kmake/pkg/kmake/util"
 	"github.com/sirupsen/logrus"
 )
 
-func LocalBuild(imageName, dockerfile, _ string) (string, error) {
-	logrus.Infof("Building docker image %s from %s", imageName, dockerfile)
-	digest, err := exec.Command("docker", "build", "-q", "--tag", imageName, "--file", dockerfile, filepath.Dir(dockerfile)).Output()
+func LocalBuild(imageName, dockerfile, _ string, t Tagger) (string, error) {
+	tag, err := t.Tag()
 	if err != nil {
-		return "", errors.Wrapf(err, "running docker build: %s %s", digest, err)
+		return "", err
 	}
-	digestStr := strings.TrimSpace(string(digest))
-	d := strings.Split(digestStr, ":")
-	checksum := d[1]
+	logrus.Infof("Generated tag: %s", tag)
+	fqImageName := fmt.Sprintf("%s:%s", imageName, tag)
+	logrus.Infof("Building docker image %s from %s", fqImageName, dockerfile)
+	cmd := exec.Command("docker", "build", "-q", "--tag", fqImageName, "--file", dockerfile, filepath.Dir(dockerfile))
+	stdout, stderr, err := util.RunCommand(cmd, nil)
 
-	logrus.Infof("Docker build of %s complete: %s", imageName, checksum)
-	tag := fmt.Sprintf("%s:%s", imageName, checksum)
-	out, err := exec.Command("docker", "tag", imageName, tag).CombinedOutput()
 	if err != nil {
-		return "", errors.Wrapf(err, "tagging image: %s", out)
+		return "", errors.Wrapf(err, "docker build: %s %s", string(stdout), string(stderr))
 	}
 
-	return tag, nil
+	return fqImageName, nil
+}
+
+func Push(imageName string) error {
+	logrus.Infof("Pushing docker image %s", imageName)
+	output, err := exec.Command("docker", "push", imageName).CombinedOutput()
+	logrus.Infof("Push output: %s", output)
+	return err
 }
