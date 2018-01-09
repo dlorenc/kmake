@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/pkg/errors"
 	"github.com/r2d4/kmake/pkg/kmake/builder"
+	"github.com/r2d4/kmake/pkg/kmake/config"
 	"github.com/r2d4/kmake/pkg/kmake/updater"
 	"github.com/r2d4/kmake/pkg/kmake/watch"
 	"github.com/sirupsen/logrus"
@@ -12,23 +14,21 @@ import (
 )
 
 var (
-	imageName      string
-	dockerfilePath string
-	projectId      string
-	remote         bool
+	projectId string
+	remote    bool
 )
 
 type WatchSrv struct {
 	watch  func(string, string) error
 	build  func(string, string, string, builder.Tagger) (string, error)
-	update func(string) error
+	update func(string, []string, []config.Artifact) error
 }
 
 //TODO(@r2d4): make these interfaces and configurable
 var defaultWatcher = WatchSrv{
 	watch:  watch.Watch,
 	build:  builder.LocalBuild,
-	update: updater.KsonnetUpdater,
+	update: updater.KubectlUpdater,
 }
 
 func NewCmdWatch(out io.Writer) *cobra.Command {
@@ -41,8 +41,7 @@ func NewCmdWatch(out io.Writer) *cobra.Command {
 			}
 		},
 	}
-	cmd.Flags().StringVar(&imageName, "image-name", "", "the name of the image to build")
-	cmd.Flags().StringVar(&dockerfilePath, "dockerfile", "Dockerfile", "the relative path to the dockerfile")
+	cmd.Flags().StringVar(&configFile, "config-file", "kmake.yaml", "the path of the config file to build")
 	cmd.Flags().BoolVar(&remote, "remote", false, "local or remote builds")
 	cmd.Flags().StringVar(&projectId, "project-id", "", "project id to use for cloud builds")
 	return cmd
@@ -53,22 +52,35 @@ func RunWatch(out io.Writer, cmd *cobra.Command) error {
 		defaultWatcher.build = builder.RemoteBuild
 	}
 
-	tagger := &builder.CommitTagger{}
-
-	for {
-		if err := defaultWatcher.watch(imageName, dockerfilePath); err != nil {
-			return errors.Wrap(err, "watch")
-		}
-
-		digest, err := defaultWatcher.build(imageName, dockerfilePath, projectId, tagger)
-		if err != nil {
-			return errors.Wrap(err, "build")
-		}
-
-		if err := defaultWatcher.update(digest); err != nil {
-			return errors.Wrap(err, "update")
-		}
+	cfg, err := config.Parse(configFile)
+	fmt.Println(cfg)
+	if err != nil {
+		return err
 	}
+
+	tagger := &builder.TimeStampTagger{}
+	done := make(chan bool)
+
+	for _, artifact := range cfg.Artifacts {
+		go func(a config.Artifact) error {
+			for {
+				if err := defaultWatcher.watch(a.ImageName, a.DockerfilePath); err != nil {
+					return errors.Wrap(err, "watch")
+				}
+
+				digest, err := defaultWatcher.build(a.ImageName, a.DockerfilePath, projectId, tagger)
+				if err != nil {
+					return errors.Wrap(err, "build")
+				}
+
+				if err := defaultWatcher.update(digest, cfg.Manifests, []config.Artifact{a}); err != nil {
+					return errors.Wrap(err, "update")
+				}
+			}
+		}(artifact)
+	}
+
+	<-done
 
 	return nil
 }

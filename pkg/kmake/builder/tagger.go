@@ -2,7 +2,9 @@ package builder
 
 import (
 	"os/exec"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/r2d4/kmake/pkg/kmake/util"
@@ -23,4 +25,12 @@ func (c *CommitTagger) Tag() (string, error) {
 	}
 
 	return strings.TrimSuffix(string(stdout), "\n"), nil
+}
+
+type TimeStampTagger struct {
+}
+
+func (t *TimeStampTagger) Tag() (string, error) {
+	n := time.Now()
+	return strconv.FormatInt(n.Unix(), 10), nil
 }
